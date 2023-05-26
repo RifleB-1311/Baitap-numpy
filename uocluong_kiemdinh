@@ -1,0 +1,457 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/RifleB-1311/Baitap-numpy/blob/main/uocluong_kiemdinh\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "adadda21",
+      "metadata": {
+        "id": "adadda21"
+      },
+      "outputs": [],
+      "source": [
+        "import math\n",
+        "import pandas as pd \n",
+        "import numpy as np \n",
+        "import random as rd\n",
+        "from statsmodels.stats.weightstats import ztest\n",
+        "from statsmodels.formula.api import ols\n",
+        "import statsmodels.graphics.gofplots as sm\n",
+        "import statsmodels.api as sma\n",
+        "import warnings\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "\n",
+        "from scipy.stats import ttest_1samp\n",
+        "from scipy import stats\n",
+        "from scipy.stats import norm\n",
+        "from scipy.stats import shapiro\n",
+        "from scipy.stats import f_oneway\n",
+        "import statistics\n",
+        "from statistics import variance as var\n",
+        "from collections import Counter"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "870ae972",
+      "metadata": {
+        "id": "870ae972"
+      },
+      "outputs": [],
+      "source": [
+        "def t_test(data, sample_mean, do_tin_cay, tail):\n",
+        "    \n",
+        "    data = stats.ttest_1samp(data, sample_mean, alternative = tail) #alternative (default: 'two-sided', 'less', 'greater')\n",
+        "    \n",
+        "    if data[1] > do_tin_cay:\n",
+        "        print(\"Vì giá trị p = {} lớn hơn mức ý nghĩa là {} nên ta không thể bác bỏ giả thuyết H_o\".format(data[1],do_tin_cay))\n",
+        "    else:\n",
+        "        print(\"Vì p = {} bé hơn mức ý nghĩa là {} nên đủ điều kiện để bác bỏ giả thuyết H_o\".format(data[1],do_tin_cay))\n",
+        "    \n",
+        "    return data\n",
+        "          \n",
+        "    \n",
+        "def z_test(data1, data2, mean, do_tin_cay, tail):\n",
+        "    \n",
+        "    data = ztest(x1 = data1, x2 = data2, value = mean, alternative = tail) #alternative (default: 'two-sided', 'smaller', 'larger')\n",
+        "    if data[1] > do_tin_cay:\n",
+        "        print(\"Bởi vì giá trị p = {} lớn hơn mức ý nghĩa là {} nên ta không thể bác bỏ giả thuyết H_o\".format(data[1],do_tin_cay))\n",
+        "    else:\n",
+        "        print(\"Vì p = {} bé hơn mức ý nghĩa là {} nên đủ điều kiện để bác bỏ giả thuyết H_o\".format(data[1],do_tin_cay))\n",
+        "        \n",
+        "    return data"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "6f804c76",
+      "metadata": {
+        "id": "6f804c76"
+      },
+      "source": [
+        "Tiến hành lấy dữ liệu vào"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "872a9742",
+      "metadata": {
+        "id": "872a9742"
+      },
+      "outputs": [],
+      "source": [
+        "data_temp = pd.read_csv('D:/Download/Dataset-Temperature-by-years.csv', encoding = 'utf8')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "6741b136",
+      "metadata": {
+        "id": "6741b136",
+        "outputId": "a9b18b40-8211-4249-d47e-b01258743759"
+      },
+      "outputs": [
+        {
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Year</th>\n",
+              "      <th>Month</th>\n",
+              "      <th>Season</th>\n",
+              "      <th>Salinity</th>\n",
+              "      <th>Temperature</th>\n",
+              "      <th>CHLFa</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>1990</td>\n",
+              "      <td>1</td>\n",
+              "      <td>winter</td>\n",
+              "      <td>31.88</td>\n",
+              "      <td>5.8</td>\n",
+              "      <td>0.73</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>1990</td>\n",
+              "      <td>2</td>\n",
+              "      <td>winter</td>\n",
+              "      <td>32.08</td>\n",
+              "      <td>7.0</td>\n",
+              "      <td>1.60</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>1990</td>\n",
+              "      <td>3</td>\n",
+              "      <td>spring</td>\n",
+              "      <td>31.98</td>\n",
+              "      <td>9.1</td>\n",
+              "      <td>2.60</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>1990</td>\n",
+              "      <td>4</td>\n",
+              "      <td>spring</td>\n",
+              "      <td>31.86</td>\n",
+              "      <td>9.7</td>\n",
+              "      <td>7.03</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>1990</td>\n",
+              "      <td>5</td>\n",
+              "      <td>spring</td>\n",
+              "      <td>32.87</td>\n",
+              "      <td>15.2</td>\n",
+              "      <td>3.70</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   Year  Month  Season  Salinity  Temperature  CHLFa\n",
+              "0  1990      1  winter     31.88          5.8   0.73\n",
+              "1  1990      2  winter     32.08          7.0   1.60\n",
+              "2  1990      3  spring     31.98          9.1   2.60\n",
+              "3  1990      4  spring     31.86          9.7   7.03\n",
+              "4  1990      5  spring     32.87         15.2   3.70"
+            ]
+          },
+          "execution_count": 7,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "data_temp.head(5)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "28883228",
+      "metadata": {
+        "id": "28883228",
+        "outputId": "ab33b16c-6951-4320-eb94-7e70279df5d6"
+      },
+      "outputs": [
+        {
+          "data": {
+            "text/plain": [
+              "(1000, 6)"
+            ]
+          },
+          "execution_count": 8,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "data_temp.shape"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "168cfb70",
+      "metadata": {
+        "id": "168cfb70"
+      },
+      "source": [
+        "Loại bỏ các giá trị NA trong tập dữ liệu"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "88c10b9f",
+      "metadata": {
+        "id": "88c10b9f"
+      },
+      "outputs": [],
+      "source": [
+        "data_temp = data_temp.dropna()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "8db50000",
+      "metadata": {
+        "id": "8db50000",
+        "outputId": "c4d76f49-1a7f-42e6-ea50-614538f5b466"
+      },
+      "outputs": [
+        {
+          "data": {
+            "text/plain": [
+              "(935, 6)"
+            ]
+          },
+          "execution_count": 10,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "data_temp.shape"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a6ef2254",
+      "metadata": {
+        "id": "a6ef2254"
+      },
+      "source": [
+        "Lấy ra các mẫu vào năm 1990"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "0ef7d006",
+      "metadata": {
+        "id": "0ef7d006",
+        "outputId": "e48ef250-263b-434c-fa81-5c0a502e2066"
+      },
+      "outputs": [
+        {
+          "name": "stdout",
+          "output_type": "stream",
+          "text": [
+            "(49,)\n"
+          ]
+        }
+      ],
+      "source": [
+        "temp_1990 = data_temp.loc[data_temp['Year'] == 1990].loc[:,'Temperature']\n",
+        "print(temp_1990.shape)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "663fad54",
+      "metadata": {
+        "id": "663fad54"
+      },
+      "source": [
+        "**Kiểm đinh T-test một mẫu**"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "9080d9da",
+      "metadata": {
+        "id": "9080d9da"
+      },
+      "source": [
+        "Phát biểu bài toán: Giả sử ta muốn biết nhiệt độ trung bình trong năm 1990 có lớn hơn 10 hay không, với kích thước mẫu = 49.\n",
+        "\n",
+        "Xây dựng giả thuyết\n",
+        "\n",
+        "$$H_{0}: \\mu <= 10$$\n",
+        "\n",
+        "Giả thuyết thay thế: \n",
+        "\n",
+        "$$H_{a}: \\mu > 10$$\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "f2fc4c09",
+      "metadata": {
+        "id": "f2fc4c09",
+        "outputId": "76f25728-2c7a-40b9-b1b5-df177114713d"
+      },
+      "outputs": [
+        {
+          "data": {
+            "text/plain": [
+              "12.16734693877551"
+            ]
+          },
+          "execution_count": 27,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "temp_1990.mean()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "5afb0674",
+      "metadata": {
+        "id": "5afb0674",
+        "outputId": "b296200a-7b2e-4b3e-f476-279e473a6e73"
+      },
+      "outputs": [
+        {
+          "name": "stdout",
+          "output_type": "stream",
+          "text": [
+            "Xác định các tham số: \n",
+            " Độ tin cậy: 0.5 \n",
+            " Giá trị trung bình mẫu: 12.16734693877551 \n",
+            " Độ lệch chuẩn: 5.2924627126344355 \n",
+            " Kích thước mẫu: 49\n"
+          ]
+        }
+      ],
+      "source": [
+        "alpha = 0.1 #với độ tin cậy 90%\n",
+        "sample_mean = temp_1990.mean() #gía trị trung bình mẫu\n",
+        "std = math.sqrt(temp_1990.var()) #Độ lệch chuẩn\n",
+        "n = temp_1990.shape[0]\n",
+        "\n",
+        "mean = 10 \n",
+        "\n",
+        "print(f'Xác định các tham số: \\n Độ tin cậy: {alpha} \\n Giá trị trung bình mẫu: {sample_mean} \\n Độ lệch chuẩn: {std} \\n Kích thước mẫu: {n}')"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "84601ca0",
+      "metadata": {
+        "id": "84601ca0"
+      },
+      "source": [
+        "Sau khi có các tham số trên, ta tiến hành kiểm định T test "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "4af690d2",
+      "metadata": {
+        "id": "4af690d2",
+        "outputId": "02274477-a641-48bc-bbe0-e786b8aa17c5"
+      },
+      "outputs": [
+        {
+          "name": "stdout",
+          "output_type": "stream",
+          "text": [
+            "Vì p = 0.5 bé hơn mức ý nghĩa là 0.5 nên đủ điều kiện để bác bỏ giả thuyết H_o\n"
+          ]
+        },
+        {
+          "data": {
+            "text/plain": [
+              "Ttest_1sampResult(statistic=0.0, pvalue=0.5)"
+            ]
+          },
+          "execution_count": 29,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "t_test(temp_1990, sample_mean, alpha, 'greater')"
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.9.13"
+    },
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
